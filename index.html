@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>用Vue.js製作圖片版EDM生成器 - Augustus - Let's Write</title>
+    <meta name="description" content="圖片版EDM生成器">
+    <link rel="canonical" href="https://letswritetw.github.io/letswrite-image-edm-build/">
+    <meta property="og:url" content="https://letswritetw.github.io/letswrite-image-edm-build/">
+    <meta property="fb:app_id" content="2435108729902508">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Let's Write">
+    <meta property="og:title" content="用Vue.js製作圖片版EDM生成器 - Augustus - Let's Write">
+    <meta itemprop="name" content="用Vue.js製作圖片版EDM生成器 - Augustus - Let's Write">
+    <meta name="description" content="之前常遇到臨時要出一份EDM，雖然就是個簡單的步驟，不花什麼時間，但就是會打斷其他正在寫的案子，或是要下班前才接到電話阻止人下班，為了解決這種零碎的問題，這幾天開發了一個EDM生成器。">
+    <meta property="og:description" content="之前常遇到臨時要出一份EDM，雖然就是個簡單的步驟，不花什麼時間，但就是會打斷其他正在寫的案子，或是要下班前才接到電話阻止人下班，為了解決這種零碎的問題，這幾天開發了一個EDM生成器。">
+    <meta itemprop="description" content="之前常遇到臨時要出一份EDM，雖然就是個簡單的步驟，不花什麼時間，但就是會打斷其他正在寫的案子，或是要下班前才接到電話阻止人下班，為了解決這種零碎的問題，這幾天開發了一個EDM生成器。">
+    <meta itemprop="image" content="https://letswritetw.github.io/letswrite-image-edm-build/fb.jpg">
+    <meta property="og:image" content="https://letswritetw.github.io/letswrite-image-edm-build/fb.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="用Vue.js製作圖片版EDM生成器">
+    <link rel="shortcut icon" href="https://i0.wp.com/letswrite.tw/wp-content/uploads/2019/07/cropped-letswrite512-1.jpg">
+    <link href="dist/letswrite-edm-image-build.min.css" rel="stylesheet">
+    <!-- Google Tag Manager-->
+    <script>
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-PGQ9WQT');
+      
+    </script>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript)-->
+    <noscript>
+      <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PGQ9WQT" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <div class="container-fluid" id="app">
+      <div class="row">
+        <div id="lego-editor">
+          <h1>Let's Write<br/>圖片EDM生成器</h1>
+          <div class="links"><a href="" target="_blank">筆記文</a><a href="" target="_blank">Github</a></div>
+          <h2>EDM 基本資訊設定</h2>
+          <div class="form-group">
+            <input class="form-control" type="text" v-model="title" placeholder="*EDM的頁面標題">
+          </div>
+          <div class="form-group">
+            <input class="form-control" type="url" v-model="url" placeholder="*EDM的網址"><small class="form-text text-break">「從瀏覽器看電子郵件」的連結</small>
+          </div>
+          <div class="form-group">
+            <input class="form-control" type="number" v-model="maxWidth" placeholder="*EDM的最大寬度"><small class="form-text text-light">EDM的寬度，最大不超過800</small>
+          </div>
+          <hr>
+          <h2>EDM 區塊製作</h2>
+          <div class="card bg-default" v-for="(t, i) in template" @mouseover="alertBlock(i, 'over')" @mouseleave="alertBlock(i ,'leave')">
+            <h5 class="card-header">{{ '區塊' + ( i+ 1 ) }}</h5>
+            <div class="card-body">
+              <div class="custom-file mb-3">
+                <input class="custom-file-input" :id="'imgInput' + ( i+ 1 )" type="file" accept="image/*" @change="previewImg(i, $event)">
+                <label class="custom-file-label" :for="'imgInput' + ( i+ 1 )">{{ t.name || '上傳圖片' }}</label>
+              </div>
+              <div class="form-group">
+                <input class="form-control" type="url" v-model="t.url" placeholder="圖片連結">
+              </div>
+              <div class="form-group mb-0">
+                <input class="form-control" type="text" v-model="t.alt" placeholder="替代文字">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-block btn-info" type="button" @click="addTemplate">+ 新增區塊</button>
+          <button class="btn btn-block btn-outline-info" type="button" v-if="template.length &gt; 1" @click="removeTemplate">- 刪除區塊</button>
+          <hr>
+          <button class="btn btn-block btn-danger" type="button" :disabled="title.length &lt; 2 || url.indexOf('http') === -1 || template[0].name === ''" @click.prevent="downloadTemplate">確認並下載</button>
+          <hr>
+        </div>
+        <div id="preview">
+          <div align="center" style="width: 100%; max-width: 800px; display: block; margin: 0 auto;">
+            <table border="0" cellspacing="0" cellpadding="0" align="center" bgcolor="#FFFFFF" :style="&quot;width: 100%; max-width: &quot; + this.maxWidth + &quot;px; margin: 0 auto;&quot;">
+              <tbody>
+                <tr>
+                  <td class="m-100" valign="middle" align="right" style="padding: 0; font-size: 12px;">
+                    <table class="m-100" border="0" cellspacing="0" cellpadding="0" align="right" :style="&quot;width:100%; max-width: &quot; + this.maxWidth + &quot;px; text-align: right;&quot;">
+                      <tbody>
+                        <tr>
+                          <td class="m-100" valign="middle"><a :href="url" valign="middle" target="_blank" style="color: #555555;">從瀏覽器看電子郵件</a></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <tr class="m-100">
+                      <td class="m-100">
+                        <table class="m-100" border="0" cellspacing="0" cellpadding="0" align="center" :style="&quot;width:100%; max-width: &quot; + this.maxWidth + &quot;px; text-align: center;&quot;">
+                          <tbody>
+                            <!-- 圖片預覽到這-->
+                            <tr class="m-100" v-for="(t, i) in template">
+                              <td class="m-100" id="content-wrap" valign="middle" align="center"><a :href="t.url" target="_blank" v-if="t.url !== ''"><img style="display: block; max-width: 100%;" :src="t.img" :alt="t.alt"></a><img v-else style="display: block; max-width: 100%;" :src="t.img.length &lt;= 0 ? `https://fakeimg.pl/${maxWidth}x200/ffffff/?text=BLOCK_${i+1}_image` : t.img" :alt="t.alt"></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <!-- footer-->
+                        <tr style="background: #eeeeee;">
+                          <td style="font-family: Microsoft JhengHei, MingLiU, sans-serif; padding: 10px 20px 10px; text-align: center; color:#555555; font-size: 12px;">
+                            <p style="margin: 0; font-family: Microsoft JhengHei, MingLiU, sans-serif;"><a style="line-height: 24px; color: #555555; text-decoration: none;" href="https://letswrite.tw/">官網</a><span style="display: inline-block; color: #555555; width: 16px;">|</span><a style="line-height: 24px; color: #555555; text-decoration: none;" href="https://www.facebook.com/letswrite.tw/">Facebook</a><span style="display: inline-block; color: #555555; width: 16px;">|</span><a style="line-height: 24px; color: #555555; text-decoration: none;" href="https://t.me/joinchat/AAAAAFFyPFuOV2tDmB7POw">Telegram</a></p>
+                            <p style="font-family: Microsoft JhengHei, MingLiU, sans-serif; margin-top: 0; margin-bottom: 0; line-height: 24px; font-size: 12px; color: #555555;">&copy; 2020 Let's Write. All Rights Reserved.</p>
+                          </td>
+                        </tr>
+                      </td>
+                    </tr>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <main id="output">
+    <head><!--[if gte mso 9]><xml>
+<o:OfficeDocumentSettings>
+<o:AllowPNG/>
+<o:PixelsPerInch>72</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml><![endif]-->
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title></title><style type="text/css">
+  body {
+    margin: 0;
+    padding: 0;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  table {
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
+    background: #FFFFFF;
+    border: 0;
+  }
+  img {
+    -ms-interpolation-mode: bicubic;
+  }
+  @media screen and (max-width: 480px) {
+    table {
+      box-sizing: border-box;
+    }
+    .m-100, .m-100 tbody, .m-100 tr {
+      display: block;
+      padding: 0;
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  }
+</style>
+    </head>
+    <body bgcolor="#ffffff" style="font-family: Microsoft JhengHei, MingLiU, sans-serif;">
+      <div align="center" style="width: 100%; max-width: 800px; display: block; margin: 0 auto;" data-maxWidth>
+        <div class="js-width-start"></div>
+        <table border="0" cellspacing="0" cellpadding="0" align="center" bgcolor="#FFFFFF" style="width: 100%; max-width: 800px; margin: 0 auto;" data-maxWidth>
+          <tbody>
+            <tr>
+              <td class="m-100" valign="middle" align="right" style="padding: 0; font-size: 12px;">
+                <div class="js-width-start"></div>
+                <table class="m-100" border="0" cellspacing="0" cellpadding="0" align="right" style="width:100%; max-width: 800px; text-align: right;" data-maxWidth>
+                  <tbody>
+                    <tr>
+                      <td class="m-100" valign="middle"><a id="js-url" href="" valign="middle" target="_blank" style="text-decoration: none; color: #555555;">從瀏覽器看電子郵件</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+<!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+
+                <!-- kv-->
+                <tr class="m-100">
+                  <td class="m-100">
+                    <div class="js-width-start"></div>
+                    <table class="m-100" border="0" cellspacing="0" cellpadding="0" align="center" style="width:100%; max-width: 800px; text-align: center;" data-maxWidth>
+                      <tbody>
+                        <tr class="m-100">
+                          <td class="m-100" id="js-content" valign="middle" align="center"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+<!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+
+                    <!-- footer-->
+                    <tr style="background: #eeeeee;">
+                      <td style="font-family: Microsoft JhengHei, MingLiU, sans-serif; padding: 10px 20px 10px; text-align: center; color:#555555; font-size: 12px;">
+                        <p style="margin: 0; font-family: Microsoft JhengHei, MingLiU, sans-serif;"><a style="line-height: 24px; color: #555555; text-decoration: none;" href="https://letswrite.tw/">官網</a><span style="display: inline-block; color: #555555; width: 16px;">|</span><a style="line-height: 24px; color: #555555; text-decoration: none;" href="https://www.facebook.com/letswrite.tw/">Facebook</a><span style="display: inline-block; color: #555555; width: 16px;">|</span><a style="line-height: 24px; color: #555555; text-decoration: none;" href="https://t.me/joinchat/AAAAAFFyPFuOV2tDmB7POw">Telegram</a></p>
+                        <p style="font-family: Microsoft JhengHei, MingLiU, sans-serif; margin-top: 0; margin-bottom: 0; line-height: 24px; font-size: 12px; color: #555555;">&copy; 2020 Let's Write. All Rights Reserved.</p>
+                      </td>
+                    </tr>
+                  </td>
+                </tr>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+<!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+
+      </div>
+    </body>
+    <script src="https://unpkg.com/vue@2.6.10/dist/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js"></script>
+    <script src="dist/letswrite-edm-image-build.min.js"></script>
+  </main>
+</html>

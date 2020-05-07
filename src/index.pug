@@ -1,0 +1,198 @@
+- var link = 'letswrite-image-edm-build'
+- var title = '用Vue.js製作圖片版EDM生成器'
+- var description = '之前常遇到臨時要出一份EDM，雖然就是個簡單的步驟，不花什麼時間，但就是會打斷其他正在寫的案子，或是要下班前才接到電話阻止人下班，為了解決這種零碎的問題，這幾天開發了一個EDM生成器。'
+
+doctype html
+html(lang="zh-TW")
+  head
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title #{title} - Augustus - Let's Write
+    meta(name="description", content="圖片版EDM生成器")
+
+    link(rel="canonical", href=`https://letswritetw.github.io/${link}/`)
+    meta(property="og:url", content=`https://letswritetw.github.io/${link}/`)
+    meta(property="fb:app_id", content="2435108729902508")
+    meta(property="og:type", content="website")
+
+    meta(property="og:site_name", content="Let's Write")
+    meta(property="og:title", content=`${title} - Augustus - Let's Write`)
+    meta(itemprop="name", content=`${title} - Augustus - Let's Write`)
+
+    meta(name="description", content=description)
+    meta(property="og:description", content=description)
+    meta(itemprop="description", content=description)
+
+    meta(itemprop="image", content=`https://letswritetw.github.io/${link}/fb.jpg`)
+    meta(property="og:image", content=`https://letswritetw.github.io/${link}/fb.jpg`)
+    meta(property="og:image:width", content="1200")
+    meta(property="og:image:height", content="630")
+    meta(property="og:image:alt", content=title)
+
+    link(rel="shortcut icon", href="https://i0.wp.com/letswrite.tw/wp-content/uploads/2019/07/cropped-letswrite512-1.jpg")
+
+    link(href="dist/letswrite-edm-image-build.min.css", rel="stylesheet")
+
+    // Google Tag Manager
+    script.
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-PGQ9WQT');
+
+  body
+
+    // Google Tag Manager (noscript)
+    noscript
+      iframe(src="https://www.googletagmanager.com/ns.html?id=GTM-PGQ9WQT", height="0", width="0", style="display:none;visibility:hidden")
+
+    #app.container-fluid
+
+      .row
+
+        //- 編輯
+        #lego-editor
+
+          h1 Let's Write<br/>圖片EDM生成器
+          
+          .links
+            a(href="", target="_blank") 筆記文
+            a(href="", target="_blank") Github
+
+          h2 EDM 基本資訊設定
+
+          .form-group
+            input.form-control(type="text", v-model="title", placeholder="*EDM的頁面標題")
+          
+          .form-group
+            input.form-control(type="url", v-model="url", placeholder="*EDM的網址")
+            small.form-text.text-break 「從瀏覽器看電子郵件」的連結
+          
+          .form-group
+            input.form-control(type="number", v-model="maxWidth", placeholder="*EDM的最大寬度")
+            small.form-text.text-light EDM的寬度，最大不超過800
+          
+          hr
+          
+          h2 EDM 區塊製作
+
+          .card.bg-default(v-for="(t, i) in template", @mouseover="alertBlock(i, 'over')", @mouseleave="alertBlock(i ,'leave')")
+            h5.card-header {{ '區塊' + ( i+ 1 ) }}
+            .card-body
+              .custom-file.mb-3
+                input.custom-file-input(:id="'imgInput' + ( i+ 1 )", type="file", accept="image/*", @change="previewImg(i, $event)")
+                label.custom-file-label(:for="'imgInput' + ( i+ 1 )") {{ t.name || '上傳圖片' }}
+              .form-group
+                input.form-control(type="url", v-model="t.url" placeholder="圖片連結")
+              .form-group.mb-0
+                input.form-control(type="text", v-model="t.alt" placeholder="替代文字")
+
+          button.btn.btn-block.btn-info(type="button", @click="addTemplate") + 新增區塊
+          button.btn.btn-block.btn-outline-info(type="button", v-if="template.length > 1", @click="removeTemplate") - 刪除區塊
+          
+          hr
+          
+          button.btn.btn-block.btn-danger(type="button", :disabled="title.length < 2 || url.indexOf('http') === -1 || template[0].name === ''", @click.prevent="downloadTemplate") 確認並下載
+
+          hr
+
+        //- 預覽
+        #preview
+          div(align='center', style='width: 100%; max-width: 800px; display: block; margin: 0 auto;')
+            
+            table(border='0', cellspacing='0', cellpadding='0', align='center', bgcolor='#FFFFFF', :style='"width: 100%; max-width: " + this.maxWidth + "px; margin: 0 auto;"')
+              
+              tbody
+                tr
+                  td.m-100(valign='middle', align='right', style='padding: 0; font-size: 12px;')
+
+                    table.m-100(border='0', cellspacing='0', cellpadding='0', align='right', :style='"width:100%; max-width: " + this.maxWidth + "px; text-align: right;"')
+                      tbody
+                        tr
+                          td.m-100(valign='middle')
+                            a(:href='url', valign='middle', target='_blank', style='color: #555555;') 從瀏覽器看電子郵件
+
+
+                    tr.m-100
+                      td.m-100
+
+                        table.m-100(border='0', cellspacing='0', cellpadding='0', align='center', :style='"width:100%; max-width: " + this.maxWidth + "px; text-align: center;"')
+                          
+                          tbody
+
+                            // 圖片預覽到這
+                            tr.m-100(v-for="(t, i) in template")
+                              td#content-wrap.m-100(valign='middle', align='center')
+
+                                a(:href='t.url', target='_blank', v-if="t.url !== ''")
+                                  img(style='display: block; max-width: 100%;', :src='t.img', :alt='t.alt')
+                                
+                                img(v-else, style='display: block; max-width: 100%;', :src='t.img.length <= 0 ? `https://fakeimg.pl/${maxWidth}x200/ffffff/?text=BLOCK_${i+1}_image` : t.img', :alt='t.alt')
+
+                        // footer
+                        include include/_edm-footer
+      
+  //- 實際下載的內容
+  main#output
+    head
+
+      include include/_edm-header
+
+      title
+      
+      include include/_edm-style.html
+    
+    body(bgcolor='#ffffff', style='font-family: Microsoft JhengHei, MingLiU, sans-serif;')
+
+      div(align='center', style='width: 100%; max-width: 800px; display: block; margin: 0 auto;', data-maxWidth)
+        
+        .js-width-start
+        
+        table(border='0', cellspacing='0', cellpadding='0', align='center', bgcolor='#FFFFFF', style='width: 100%; max-width: 800px; margin: 0 auto;', data-maxWidth)
+          
+          tbody
+            tr
+              td.m-100(valign='middle', align='right', style='padding: 0; font-size: 12px;')
+
+                .js-width-start
+
+                table.m-100(border='0', cellspacing='0', cellpadding='0', align='right', style='width:100%; max-width: 800px; text-align: right;', data-maxWidth)
+                  tbody
+                    tr
+                      td.m-100(valign='middle')
+                        a#js-url(href='', valign='middle', target='_blank', style='text-decoration: none; color: #555555;') 從瀏覽器看電子郵件
+                
+                ="\n"
+                <!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+                ="\n"
+
+                // kv
+                tr.m-100
+                  td.m-100
+
+                    .js-width-start
+
+                    table.m-100(border='0', cellspacing='0', cellpadding='0', align='center', style='width:100%; max-width: 800px; text-align: center;', data-maxWidth)
+                      
+                      tbody
+
+                        tr.m-100
+                          td#js-content.m-100(valign='middle', align='center')
+                    
+                    ="\n"
+                    <!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+                    ="\n"
+
+                    // footer
+                    include include/_edm-footer
+        
+        ="\n"
+        <!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
+        ="\n"
+
+
+    script(src="https://unpkg.com/vue@2.6.10/dist/vue.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js")
+    script(src="dist/letswrite-edm-image-build.min.js")
