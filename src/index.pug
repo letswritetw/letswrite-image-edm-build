@@ -72,35 +72,94 @@ html(lang="zh-TW")
           
           .form-group
             input.form-control(type="number", v-model="maxWidth", placeholder="*EDM的最大寬度")
-            small.form-text.text-light EDM的寬度，最大不超過800
+            small.form-text.text-light EDM的寬度，建議最大不超過800
           
           hr
           
           h2 EDM 區塊製作
 
           .card.bg-default(v-for="(t, i) in template", @mouseover="alertBlock(i, 'over')", @mouseleave="alertBlock(i ,'leave')")
-            h5.card-header {{ '區塊' + ( i+ 1 ) }}
-            .card-body
-              .custom-file.mb-3
-                input.custom-file-input(:id="'imgInput' + ( i+ 1 )", type="file", accept="image/*", @change="previewImg(i, $event)")
-                label.custom-file-label(:for="'imgInput' + ( i+ 1 )") {{ t.name || '上傳圖片' }}
-              .form-group
-                input.form-control(type="url", v-model="t.url" placeholder="圖片連結")
-              .form-group.mb-0
-                input.form-control(type="text", v-model="t.alt" placeholder="替代文字")
+            
+            //- 卡片頭
+            h5.card-header 
+              span {{ 'EDM 區塊' + ( i + 1 ) }}
+              select(class="custom-select custom-select-sm",
+                    v-model="t.columns",
+                    @change="checkColumns(i)") {{ t.columns == 1 ? '一欄' : '二欄' }}
+                option(value="1") 一欄
+                option(value="2") 二欄
 
-          button.btn.btn-block.btn-info(type="button", @click="addTemplate") + 新增區塊
-          button.btn.btn-block.btn-outline-info(type="button", v-if="template.length > 1", @click="removeTemplate") - 刪除區塊
+            .card-body
+
+              p.mt-0(v-if="t.columns == '2'") 左邊
+
+              //- 一欄 + 二欄的左邊
+              div(@mouseover="t.result[0].hover = true" @mouseleave="t.result[0].hover = false")
+
+                //- 上傳圖片
+                .custom-file.mb-3
+                  input(:id="'imgInput' + ( i + 1 )",
+                        class="custom-file-input", type="file", accept="image/*",
+                        @change.stop="previewImg(i, 0, $event)")
+                  label.custom-file-label(:for="'imgInput' + ( i + 1 )") {{ t.result[0].name || '上傳圖片' }}
+                
+                //- 圖片連結
+                .form-group
+                  input(class="form-control form-control-sm", type="url",
+                        v-model="t.result[0].url",
+                        placeholder="圖片連結")
+                
+                //- alt
+                .form-group.mb-0
+                  input(class="form-control form-control-sm", type="text",
+                        v-model="t.result[0].alt",
+                        placeholder="替代文字")
+              
+              //- 二欄的右邊
+              div(v-if="t.columns == '2'", @mouseover="t.result[1].hover = true" @mouseleave="t.result[1].hover = false")
+                p 右邊
+
+                //- 上傳圖片
+                .custom-file.mb-3
+                  input(:id="'imgInput' + ( i + 1 )",
+                        class="custom-file-input", type="file", accept="image/*",
+                        @change.stop="previewImg(i, 1, $event)")
+                  label(:for="'imgInput' + ( i + 1 )", class="custom-file-label") {{ t.result[1].name || '上傳圖片' }}
+                
+                //- 圖片連結
+                .form-group
+                  input(class="form-control form-control-sm", type="url",
+                        v-model="t.result[1].url",
+                        placeholder="圖片連結")
+                
+                //- alt
+                .form-group.mb-0
+                  input(class="form-control form-control-sm", type="text",
+                        v-model="t.result[1].alt",
+                        placeholder="替代文字")
+
+          //- 新增區塊 按鈕
+          button(class="btn btn-block btn-info", type="button",
+                @click="addTemplate") + 新增區塊
+
+          //- 刪除區塊 按鈕
+          button(class="btn btn-block btn-outline-info", type="button",
+                v-if="template.length > 1",
+                @click="removeTemplate") - 刪除區塊
           
           hr
           
-          button.btn.btn-block.btn-danger(type="button", :disabled="title.length < 2 || url.indexOf('http') === -1 || template[0].name === ''", @click.prevent="downloadTemplate") 確認並下載
+          //- 確認下載 按鈕
+          button(class="btn btn-block btn-danger",
+                type="button",
+                :disabled="title.length < 2 || url.indexOf('http') === -1 || template[0].result[0].name === ''",
+                @click.prevent="downloadTemplate") 確認並下載
 
           hr
 
         //- 預覽
         #preview
-          div(align='center', style='width: 100%; max-width: 800px; display: block; margin: 0 auto;')
+          div(align='center', :style="'width: 100%; max-width: ' + this.maxWidth + 'px; display: block; margin: 0 auto;'")
             
             table(border='0', cellspacing='0', cellpadding='0', align='center', bgcolor='#FFFFFF', :style='"width: 100%; max-width: " + this.maxWidth + "px; margin: 0 auto;"')
               
@@ -124,12 +183,31 @@ html(lang="zh-TW")
 
                             // 圖片預覽到這
                             tr.m-100(v-for="(t, i) in template")
-                              td#content-wrap.m-100(valign='middle', align='center')
 
-                                a(:href='t.url', target='_blank', v-if="t.url !== ''")
-                                  img(style='display: block; max-width: 100%;', :src='t.img', :alt='t.alt')
+                              //- 一欄
+                              template(v-if="t.columns == '1'")
+                                td.m-100.hover-effect(valign='middle', align='center', :colspan="templateColspan ? 2 : 1", :class="{ effect: t.result[0].hover }")
+
+                                  a(:href='t.result[0].url', target='_blank', v-if="t.result[0].url !== ''")
+                                    img(style='display: block; max-width: 100%;', :src='t.result[0].img', :alt='t.result[0].alt')
+                                  
+                                  img(v-else, style='display: block; max-width: 100%;', :src='t.result[0].img.length <= 0 ? `https://fakeimg.pl/${maxWidth}x200/ffffff/?text=EDM_${i+1}_image` : t.result[0].img', :alt='t.result[0].alt')
+                              
+                              //- 二欄
+                              template(v-if="t.columns == '2'")
+                                td.m-100.hover-effect(valign='middle', align='center', :width='maxWidth / 2', :class="{ effect: t.result[0].hover }")
+
+                                  a(:href='t.result[0].url', target='_blank', v-if="t.result[0].url !== ''")
+                                    img(style='display: block; max-width: 100%;', :src='t.result[0].img', :alt='t.result[0].alt')
+                                  
+                                  img(v-else, style='display: block; max-width: 100%;', :src='t.result[0].img.length <= 0 ? `https://fakeimg.pl/${maxWidth/2}x200/ffffff/?text=EDM_${i+1}_1_image` : t.result[0].img', :alt='t.result[0].alt')
                                 
-                                img(v-else, style='display: block; max-width: 100%;', :src='t.img.length <= 0 ? `https://fakeimg.pl/${maxWidth}x200/ffffff/?text=BLOCK_${i+1}_image` : t.img', :alt='t.alt')
+                                td.m-100.hover-effect(valign='middle', align='center', :width='maxWidth / 2', :class="{ effect: t.result[1].hover }")
+
+                                  a(:href='t.result[1].url', target='_blank', v-if="t.result[1].url !== ''")
+                                    img(style='display: block; max-width: 100%;', :src='t.result[1].img', :alt='t.result[1].alt')
+                                  
+                                  img(v-else, style='display: block; max-width: 100%;', :src='t.result[1].img.length <= 0 ? `https://fakeimg.pl/${maxWidth/2}x200/ffffff/?text=EDM_${i+1}_2_image` : t.result[1].img', :alt='t.result[1].alt')
 
                         // footer
                         include include/_edm-footer
@@ -176,10 +254,7 @@ html(lang="zh-TW")
 
                     table.m-100(border='0', cellspacing='0', cellpadding='0', align='center', style='width:100%; max-width: 800px; text-align: center;', data-maxWidth)
                       
-                      tbody
-
-                        tr.m-100
-                          td#js-content.m-100(valign='middle', align='center')
+                      tbody#js-content
                     
                     ="\n"
                     <!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->

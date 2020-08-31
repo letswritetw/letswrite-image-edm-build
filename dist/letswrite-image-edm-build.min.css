@@ -33,6 +33,8 @@
     margin-bottom: 0;
     text-align: center;
     font-size: 22px; }
+  #lego-editor p {
+    color: #555; }
   #lego-editor .links {
     display: flex;
     justify-content: center;
@@ -59,6 +61,8 @@
     border: 0;
     width: 100%;
     height: 1px; }
+  #lego-editor .mt-0 {
+    margin-top: 0; }
   #lego-editor .mb-0 {
     margin-bottom: 0 !important; }
   #lego-editor .form-group {
@@ -119,6 +123,11 @@
       pointer-events: none; }
     #lego-editor .btn + .btn {
       margin-top: 1rem; }
+  #lego-editor .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem; }
   #lego-editor .btn-info {
     color: #fff;
     background-color: #00A7E5;
@@ -136,11 +145,11 @@
       color: #fff;
       background-color: #00A7E5;
       border-color: #00A7E5; }
-    #lego-editor .btn-info:not(:disabled):not(.disabled):active, #lego-editor .btn-info:not(:disabled):not(.disabled).active {
+    #lego-editor .btn-info:not(:disabled):not(.disabled):active, #lego-editor .btn-info.active:not(:disabled):not(.disabled) {
       color: #fff;
       background-color: #008BBF;
       border-color: #008BBF; }
-  #lego-editor .btn-info:not(:disabled):not(.disabled):active:focus, #lego-editor .btn-info:not(:disabled):not(.disabled).active:focus {
+  #lego-editor .btn-info:not(:disabled):not(.disabled):active:focus, #lego-editor .btn-info.active:not(:disabled):not(.disabled):focus {
     box-shadow: 0 0 0 0.2rem rgba(0, 167, 229, 0.5); }
   #lego-editor .btn-outline-info {
     color: #00A7E5;
@@ -154,11 +163,11 @@
     #lego-editor .btn-outline-info.disabled, #lego-editor .btn-outline-info:disabled {
       color: #00A7E5;
       background-color: transparent; }
-    #lego-editor .btn-outline-info:not(:disabled):not(.disabled):active, #lego-editor .btn-outline-info:not(:disabled):not(.disabled).active {
+    #lego-editor .btn-outline-info:not(:disabled):not(.disabled):active, #lego-editor .btn-outline-info.active:not(:disabled):not(.disabled) {
       color: #fff;
       background-color: #00A7E5;
       border-color: #00A7E5; }
-  #lego-editor .btn-outline-info:not(:disabled):not(.disabled):active:focus, #lego-editor .btn-outline-info:not(:disabled):not(.disabled).active:focus {
+  #lego-editor .btn-outline-info:not(:disabled):not(.disabled):active:focus, #lego-editor .btn-outline-info.active:not(:disabled):not(.disabled):focus {
     box-shadow: 0 0 0 0.2rem rgba(0, 139, 191, 0.5); }
   #lego-editor .btn-danger {
     color: #fff;
@@ -177,11 +186,11 @@
       color: #fff;
       background-color: #f44336;
       border-color: #f44336; }
-    #lego-editor .btn-danger:not(:disabled):not(.disabled):active, #lego-editor .btn-danger:not(:disabled):not(.disabled).active {
+    #lego-editor .btn-danger:not(:disabled):not(.disabled):active, #lego-editor .btn-danger.active:not(:disabled):not(.disabled) {
       color: #fff;
       background-color: #c62828;
       border-color: #b21f2d; }
-  #lego-editor .btn-danger:not(:disabled):not(.disabled):active:focus, #lego-editor .btn-danger:not(:disabled):not(.disabled).active:focus {
+  #lego-editor .btn-danger:not(:disabled):not(.disabled):active:focus, #lego-editor .btn-danger.active:not(:disabled):not(.disabled):focus {
     box-shadow: 0 0 0 0.2rem rgba(198, 40, 40, 0.5); }
   #lego-editor .btn-block {
     display: block;
@@ -207,13 +216,19 @@
       background: #008BBF;
       color: #ffffff; }
   #lego-editor .card-header {
+    display: flex;
+    align-items: center;
     margin: 0;
-    padding: 0.5rem 1.25rem;
+    padding: 0.5rem 0.75rem;
     margin-bottom: 0;
     background-color: #008BBF;
     border-top-left-radius: 0.25rem;
     border-top-right-radius: 0.25rem;
     color: #ffffff; }
+    #lego-editor .card-header span {
+      display: inine-block;
+      flex: 0 0 auto;
+      width: 60%; }
   #lego-editor .card-body {
     -ms-flex: 1 1 auto;
     flex: 1 1 auto;
@@ -273,6 +288,110 @@
       background-color: #B2EBF2;
       border-left: inherit;
       border-radius: 0 0.25rem 0.25rem 0; }
+  #lego-editor .form-control-sm {
+    height: calc(1.5em + 0.5rem + 2px);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem; }
+  #lego-editor .dropdown, #lego-editor .dropleft {
+    position: relative; }
+  #lego-editor .dropdown-toggle {
+    white-space: nowrap; }
+    #lego-editor .dropdown-toggle::after {
+      display: inline-block;
+      margin-left: 0.255em;
+      vertical-align: 0.255em;
+      content: "";
+      border-top: 0.3em solid;
+      border-right: 0.3em solid transparent;
+      border-bottom: 0;
+      border-left: 0.3em solid transparent; }
+    #lego-editor .dropdown-toggle:empty::after {
+      margin-left: 0; }
+  #lego-editor .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 10rem;
+    padding: 0.5rem 0;
+    margin: 0.125rem 0 0;
+    font-size: 1rem;
+    color: #212529;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem; }
+  #lego-editor .dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.25rem 1.5rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0; }
+    #lego-editor .dropdown-item:hover, #lego-editor .dropdown-item:focus {
+      color: #16181b;
+      text-decoration: none;
+      background-color: #f8f9fa; }
+    #lego-editor .dropdown-item.active, #lego-editor .dropdown-item:active {
+      color: #fff;
+      text-decoration: none;
+      background-color: #007bff; }
+    #lego-editor .dropdown-item.disabled, #lego-editor .dropdown-item:disabled {
+      color: #6c757d;
+      pointer-events: none;
+      background-color: transparent; }
+  #lego-editor .dropdown-menu.show {
+    display: block; }
+  #lego-editor .custom-select {
+    display: inline-block;
+    width: 100%;
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    vertical-align: middle;
+    background: #fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    appearance: none;
+    cursor: pointer; }
+    #lego-editor .custom-select:focus {
+      border-color: #ffeb3b;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(255, 235, 59, 0.25); }
+    #lego-editor .custom-select::-ms-value {
+      color: #495057;
+      background-color: #fff; }
+    #lego-editor .custom-select[multiple], #lego-editor .custom-select[size]:not([size="1"]) {
+      height: auto;
+      padding-right: 0.75rem;
+      background-image: none; }
+    #lego-editor .custom-select:disabled {
+      color: #6c757d;
+      background-color: #e9ecef; }
+    #lego-editor .custom-select::-ms-expand {
+      display: none; }
+    #lego-editor .custom-select:-moz-focusring {
+      color: transparent;
+      text-shadow: 0 0 0 #495057; }
+  #lego-editor .custom-select-sm {
+    height: calc(1.5em + 0.5rem + 2px);
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    padding-left: 0.5rem;
+    font-size: 0.875rem; }
 
 #preview {
   padding-top: 15px;
@@ -283,11 +402,21 @@
 
 @keyframes alert {
   0%, 100% {
-    opacity: 1; }
+    opacity: 0; }
   50% {
-    opacity: 0.6; } }
+    opacity: 0.4; } }
 
-#content-wrap {
-  background: #00A7E5; }
-  #content-wrap img.alert {
-    animation: alert 1s both 3; }
+.hover-effect {
+  position: relative; }
+  .hover-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    background: #17a2b8; }
+  .hover-effect.effect::before {
+    z-index: 0;
+    animation: alert 1s both 2; }

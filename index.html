@@ -51,33 +51,54 @@
             <input class="form-control" type="url" v-model="url" placeholder="*EDM的網址"><small class="form-text text-break">「從瀏覽器看電子郵件」的連結</small>
           </div>
           <div class="form-group">
-            <input class="form-control" type="number" v-model="maxWidth" placeholder="*EDM的最大寬度"><small class="form-text text-light">EDM的寬度，最大不超過800</small>
+            <input class="form-control" type="number" v-model="maxWidth" placeholder="*EDM的最大寬度"><small class="form-text text-light">EDM的寬度，建議最大不超過800</small>
           </div>
           <hr>
           <h2>EDM 區塊製作</h2>
           <div class="card bg-default" v-for="(t, i) in template" @mouseover="alertBlock(i, 'over')" @mouseleave="alertBlock(i ,'leave')">
-            <h5 class="card-header">{{ '區塊' + ( i+ 1 ) }}</h5>
+            <h5 class="card-header"> <span>{{ 'EDM 區塊' + ( i + 1 ) }}</span>
+              <select class="custom-select custom-select-sm" v-model="t.columns" @change="checkColumns(i)">{{ t.columns == 1 ? '一欄' : '二欄' }}
+                <option value="1">一欄</option>
+                <option value="2">二欄</option>
+              </select>
+            </h5>
             <div class="card-body">
-              <div class="custom-file mb-3">
-                <input class="custom-file-input" :id="'imgInput' + ( i+ 1 )" type="file" accept="image/*" @change="previewImg(i, $event)">
-                <label class="custom-file-label" :for="'imgInput' + ( i+ 1 )">{{ t.name || '上傳圖片' }}</label>
+              <p class="mt-0" v-if="t.columns == '2'">左邊</p>
+              <div @mouseover="t.result[0].hover = true" @mouseleave="t.result[0].hover = false">
+                <div class="custom-file mb-3">
+                  <input class="custom-file-input" :id="'imgInput' + ( i + 1 )" type="file" accept="image/*" @change.stop="previewImg(i, 0, $event)">
+                  <label class="custom-file-label" :for="'imgInput' + ( i + 1 )">{{ t.result[0].name || '上傳圖片' }}</label>
+                </div>
+                <div class="form-group">
+                  <input class="form-control form-control-sm" type="url" v-model="t.result[0].url" placeholder="圖片連結">
+                </div>
+                <div class="form-group mb-0">
+                  <input class="form-control form-control-sm" type="text" v-model="t.result[0].alt" placeholder="替代文字">
+                </div>
               </div>
-              <div class="form-group">
-                <input class="form-control" type="url" v-model="t.url" placeholder="圖片連結">
-              </div>
-              <div class="form-group mb-0">
-                <input class="form-control" type="text" v-model="t.alt" placeholder="替代文字">
+              <div v-if="t.columns == '2'" @mouseover="t.result[1].hover = true" @mouseleave="t.result[1].hover = false">
+                <p>右邊</p>
+                <div class="custom-file mb-3">
+                  <input class="custom-file-input" :id="'imgInput' + ( i + 1 )" type="file" accept="image/*" @change.stop="previewImg(i, 1, $event)">
+                  <label class="custom-file-label" :for="'imgInput' + ( i + 1 )">{{ t.result[1].name || '上傳圖片' }}</label>
+                </div>
+                <div class="form-group">
+                  <input class="form-control form-control-sm" type="url" v-model="t.result[1].url" placeholder="圖片連結">
+                </div>
+                <div class="form-group mb-0">
+                  <input class="form-control form-control-sm" type="text" v-model="t.result[1].alt" placeholder="替代文字">
+                </div>
               </div>
             </div>
           </div>
           <button class="btn btn-block btn-info" type="button" @click="addTemplate">+ 新增區塊</button>
           <button class="btn btn-block btn-outline-info" type="button" v-if="template.length &gt; 1" @click="removeTemplate">- 刪除區塊</button>
           <hr>
-          <button class="btn btn-block btn-danger" type="button" :disabled="title.length &lt; 2 || url.indexOf('http') === -1 || template[0].name === ''" @click.prevent="downloadTemplate">確認並下載</button>
+          <button class="btn btn-block btn-danger" type="button" :disabled="title.length &lt; 2 || url.indexOf('http') === -1 || template[0].result[0].name === ''" @click.prevent="downloadTemplate">確認並下載</button>
           <hr>
         </div>
         <div id="preview">
-          <div align="center" style="width: 100%; max-width: 800px; display: block; margin: 0 auto;">
+          <div align="center" :style="'width: 100%; max-width: ' + this.maxWidth + 'px; display: block; margin: 0 auto;'">
             <table border="0" cellspacing="0" cellpadding="0" align="center" bgcolor="#FFFFFF" :style="&quot;width: 100%; max-width: &quot; + this.maxWidth + &quot;px; margin: 0 auto;&quot;">
               <tbody>
                 <tr>
@@ -95,7 +116,13 @@
                           <tbody>
                             <!-- 圖片預覽到這-->
                             <tr class="m-100" v-for="(t, i) in template">
-                              <td class="m-100" id="content-wrap" valign="middle" align="center"><a :href="t.url" target="_blank" v-if="t.url !== ''"><img style="display: block; max-width: 100%;" :src="t.img" :alt="t.alt"></a><img v-else style="display: block; max-width: 100%;" :src="t.img.length &lt;= 0 ? `https://fakeimg.pl/${maxWidth}x200/ffffff/?text=BLOCK_${i+1}_image` : t.img" :alt="t.alt"></td>
+                              <template v-if="t.columns == '1'">
+                                <td class="m-100 hover-effect" valign="middle" align="center" :colspan="templateColspan ? 2 : 1" :class="{ effect: t.result[0].hover }"><a :href="t.result[0].url" target="_blank" v-if="t.result[0].url !== ''"><img style="display: block; max-width: 100%;" :src="t.result[0].img" :alt="t.result[0].alt"></a><img v-else style="display: block; max-width: 100%;" :src="t.result[0].img.length &lt;= 0 ? `https://fakeimg.pl/${maxWidth}x200/ffffff/?text=EDM_${i+1}_image` : t.result[0].img" :alt="t.result[0].alt"></td>
+                              </template>
+                              <template v-if="t.columns == '2'">
+                                <td class="m-100 hover-effect" valign="middle" align="center" :width="maxWidth / 2" :class="{ effect: t.result[0].hover }"><a :href="t.result[0].url" target="_blank" v-if="t.result[0].url !== ''"><img style="display: block; max-width: 100%;" :src="t.result[0].img" :alt="t.result[0].alt"></a><img v-else style="display: block; max-width: 100%;" :src="t.result[0].img.length &lt;= 0 ? `https://fakeimg.pl/${maxWidth/2}x200/ffffff/?text=EDM_${i+1}_1_image` : t.result[0].img" :alt="t.result[0].alt"></td>
+                                <td class="m-100 hover-effect" valign="middle" align="center" :width="maxWidth / 2" :class="{ effect: t.result[1].hover }"><a :href="t.result[1].url" target="_blank" v-if="t.result[1].url !== ''"><img style="display: block; max-width: 100%;" :src="t.result[1].img" :alt="t.result[1].alt"></a><img v-else style="display: block; max-width: 100%;" :src="t.result[1].img.length &lt;= 0 ? `https://fakeimg.pl/${maxWidth/2}x200/ffffff/?text=EDM_${i+1}_2_image` : t.result[1].img" :alt="t.result[1].alt"></td>
+                              </template>
                             </tr>
                           </tbody>
                         </table>
@@ -176,11 +203,7 @@
                   <td class="m-100">
                     <div class="js-width-start"></div>
                     <table class="m-100" border="0" cellspacing="0" cellpadding="0" align="center" style="width:100%; max-width: 800px; text-align: center;" data-maxWidth>
-                      <tbody>
-                        <tr class="m-100">
-                          <td class="m-100" id="js-content" valign="middle" align="center"></td>
-                        </tr>
-                      </tbody>
+                      <tbody id="js-content"></tbody>
                     </table>
 <!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
 

@@ -13,12 +13,21 @@ const Lego = new Vue({
     // 各區塊的資訊
     template: [
       {
-        name: '',
-        img: '',
-        url: '',
-        alt: ''
+        columns: '1', // 幾欄：一欄、二欄
+        result: [
+          {
+            name: '',
+            img: '',
+            url: '',
+            alt: '',
+            hover: false // 要不要執行被 hover 的提示效果
+          }
+        ]
       }
     ],
+
+    // 所有區塊裡，如果有出現一個是「二欄」的就改為 true，<td> 是單欄的部份就會包上 colspan="2"
+    templateColspan: false,
 
     download: false, // 是否按了下載
     downloadHTML: null // 下載的內容
@@ -26,18 +35,24 @@ const Lego = new Vue({
   },
   methods: {
     // 編輯區 hover 時，預覽區的提示
-    alertBlock(i, hover) {
-      let img = document.querySelectorAll('#content-wrap img');
-      hover === 'over' ? img[i].classList.add('alert') : img[i].classList.remove('alert')
+    hoverEffect(i, hover, e) {
+      let td = document.querySelectorAll('.hover-effect');
+      hover === 'over' ? td[i].classList.add('effect') : td[i].classList.remove('effect')
     },
 
     // 新增區塊
     addTemplate() {
       let item = {
-        name: '',
-        img: '',
-        url: '',
-        alt: ''
+        columns: '1',
+        result: [
+          {
+            name: '',
+            img: '',
+            url: '',
+            alt: '',
+            hover: false
+          }
+        ]
       };
       this.template.push(item)
     },
@@ -47,25 +62,70 @@ const Lego = new Vue({
       this.template.pop();
     },
 
+    // 查所有區塊中，有沒有是「二欄」的
+    checkColumns(i) {
+      // 原本的資料整個洗掉
+      if(this.template[i].item === 1) {
+        this.template[i].result = [
+          {
+            name: '',
+            img: '',
+            url: '',
+            alt: '',
+            hover: false
+          }
+        ]
+      } else {
+        this.template[i].result = [
+          {
+            name: '',
+            img: '',
+            url: '',
+            alt: '',
+            hover: false
+          },
+          {
+            name: '',
+            img: '',
+            url: '',
+            alt: '',
+            hover: false
+          }
+        ]
+      }
+      
+
+      let result = false;
+      Array.prototype.forEach.call(this.template, t => {
+        if(t.columns === '2') {
+          return result = true;
+        }
+      });
+      this.templateColspan = result;
+    },
+
     // 抓上傳的圖
-    previewImg(i, event) {
-      this.template[i].name = event.target.files[0].name;
+    async previewImg(i, result, event) {
+      this.template[i].result[result].name = event.target.files[0].name;
 
       var file = event.target.files[0];
       var reader = new FileReader();
 
       reader.addEventListener('load', () => {
-        this.template[i].img = reader.result;
+        this.template[i].result[result].img = reader.result;
       }, false);
     
       if(file) reader.readAsDataURL(file);
+
     },
 
     // 確認版型
     downloadTemplate() {
 
-      // 替換 title
+      // 替換 title, url
       const output = document.getElementById('output');
+      output.querySelector('title').innerHTML = this.title; // 標題
+      output.querySelector('#js-url').href = this.url; // url
 
       // 替換 max-width
       const dataMaxWidth = document.querySelectorAll('[data-maxwidth]');
@@ -77,21 +137,84 @@ const Lego = new Vue({
       const imgContent = document.getElementById('js-content');
       imgContent.innerHTML = '';
       Array.prototype.forEach.call(this.template, t => {
-        let item;
-        if(t.url !== '') {
-          item = `
-            <a href="${t.url}" target="_blank">
-              <img style="display: block; max-width: 100%;" src="${t.name}" alt="${t.alt}">
-            </a>
-          `;
-        } else {
-          item = `<img style="display: block; max-width: 100%;" src="${t.name}" alt="${t.alt}">`;
+        let item, tdWidth;
+
+        // 單欄
+        if(t.columns === '1') {
+          tdWidth = this.maxWidth;
+          if(t.result[0].url !== '') {
+            item = `
+              <tr class="m-100">
+                <td class="m-100" valign='middle' align='center' width="${tdWidth}" colspan="${this.templateColspan ? '2' : '1'}">
+                  <a href="${t.result[0].url}" target="_blank" style="display: block;">
+                    <img style="display: block; max-width: 100%;" src="${t.result[0].name}" alt="${t.result[0].alt}">
+                  </a>
+                </td>
+              </tr>
+            `;
+          } else {
+            item = `
+              <tr class="m-100">
+                <td class="m-100" valign='middle' align='center' width="${tdWidth}" colspan="${this.templateColspan ? '2' : '1'}">
+                  <img style="display: block; max-width: 100%;" src="${t.result[0].name}" alt="${t.result[0].alt}">
+                </td>
+              </tr>
+            `;
+          }
         }
+        
+        // 雙欄
+        if(t.columns === '2') {
+          tdWidth = this.maxWidth / 2; // td 的寬度就是最大寬的一半
+          let itemLeft, itemRight; // 左、右欄的 HTML
+
+          // 左
+          if(t.result[0].url !== '') {
+            itemLeft = `
+              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+                <a href="${t.result[0].url}" target="_blank" style="display: block;">
+                  <img style="display: block; max-width: 100%;" src="${t.result[0].name}" alt="${t.result[0].alt}">
+                </a>
+              </td>
+            `;
+          } else {
+            itemLeft = `
+              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+                <img style="display: block; max-width: 100%;" src="${t.result[0].name}" alt="${t.result[0].alt}">
+              </td>
+            `;
+          }
+
+          // 右
+          if(t.result[1].url !== '') {
+            itemRight = `
+              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+                <a href="${t.result[1].url}" target="_blank" style="display: block;">
+                  <img style="display: block; max-width: 100%;" src="${t.result[1].name}" alt="${t.result[1].alt}">
+                </a>
+              </td>
+            `;
+          } else {
+            itemRight = `
+              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+                <img style="display: block; max-width: 100%;" src="${t.result[1].name}" alt="${t.result[1].alt}">
+              </td>
+            `;
+          }
+
+          // 合併左、右
+          item = `
+            <tr class="m-100">
+              ${itemLeft}
+              ${itemRight}
+            </tr>
+          `;
+        }
+        
         imgContent.insertAdjacentHTML('beforeend', item);
       });
 
-      output.querySelector('title').innerHTML = this.title; // 替換標題
-      output.querySelector('#js-url').href = this.url; // 替換 url
+
 
       // 替換 HTML
       this.downloadHTML = document.getElementById('output').outerHTML.replace('<main id="output">', '<!DOCTYPE html><html>').replace('</main>', '</html>').replace(/<div class="js-width-start"><\/div>/g, '<!--[if (gte mso 9)|(IE)]><table width="' + this.maxWidth + '" data-width cellpadding="0" cellspacing="0" border="0" align="center"><tr><td><![endif]-->');
@@ -99,7 +222,11 @@ const Lego = new Vue({
       // 包成 zip 下載
       var zip = new JSZip();
       zip.file('index.html', this.downloadHTML);
-      Array.prototype.forEach.call(this.template, t => zip.file(t.name, t.img.split(',')[1], { base64: true }));
+      Array.prototype.forEach.call(this.template, t => {
+        Array.prototype.forEach.call(t.result, r => {
+          zip.file(r.name, r.img.split(',')[1], { base64: true })
+        })
+      });
       zip.generateAsync({type:"blob"}).then(content => {
         saveAs(content, 'edm.zip');
         Swal.fire(
@@ -120,12 +247,5 @@ const Lego = new Vue({
         'error'
       )
     }
-  },
-  watch: {
-    maxWidth: function(val) {
-      if(val > 800) {
-        this.maxWidth = 800;
-      }
-    }
-  },
+  }
 });
