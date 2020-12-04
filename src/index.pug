@@ -73,12 +73,19 @@ html(lang="zh-TW")
           .form-group
             input.form-control(type="number", v-model="maxWidth", placeholder="*EDM的最大寬度")
             small.form-text.text-light EDM的寬度，建議最大不超過800
+
+          .form-group
+            small.form-text Footer 顏色：
+            small.form-text 背景、連結、文字
+            input(type="color", v-model="footer_bg")
+            input(type="color", v-model="footer_link")
+            input(type="color", v-model="footer_color")
           
           hr
           
           h2 EDM 區塊製作
 
-          .card.bg-default(v-for="(t, i) in template", @mouseover="alertBlock(i, 'over')", @mouseleave="alertBlock(i ,'leave')")
+          .card.bg-default(v-for="(t, i) in template", @mouseover="hoverEffect(i, 'over')", @mouseleave="hoverEffect(i ,'leave')")
             
             //- 卡片頭
             h5.card-header 
@@ -210,7 +217,7 @@ html(lang="zh-TW")
                                   img(v-else, style='display: block; max-width: 100%;', :src='t.result[1].img.length <= 0 ? `https://fakeimg.pl/${maxWidth/2}x200/ffffff/?text=EDM_${i+1}_2_image` : t.result[1].img', :alt='t.result[1].alt')
 
                         // footer
-                        include include/_edm-footer
+                        include include/_edm-footer-vue
       
   //- 實際下載的內容
   main#output
@@ -261,13 +268,13 @@ html(lang="zh-TW")
                     ="\n"
 
                     // footer
-                    include include/_edm-footer
+                    include include/_edm-footer-output
         
         ="\n"
         <!--[if (gte mso 9)|(IE)]></td></tr></table><![endif]-->
         ="\n"
 
 
-  script(src="https://unpkg.com/vue@2.6.10/dist/vue.min.js")
+  script(src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js")
   script(src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.3.0/jszip.min.js")
   script(src="dist/letswrite-image-edm-build.min.js")

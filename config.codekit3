@@ -189,13 +189,23 @@
 		"rFN": 0,
 		"uCM": 0
 		},
-	"/src/include/_edm-footer.pug": {
+	"/src/include/_edm-footer-output.pug": {
 		"cB": 0,
 		"cOD": 1,
 		"ft": 512,
 		"hM": 0,
 		"oA": 1,
-		"oAP": "/src/include/_edm-footer.html",
+		"oAP": "/src/include/_edm-footer-output.html",
+		"oF": 0,
+		"oS": 0
+		},
+	"/src/include/_edm-footer-vue.pug": {
+		"cB": 0,
+		"cOD": 1,
+		"ft": 512,
+		"hM": 0,
+		"oA": 1,
+		"oAP": "/src/include/_edm-footer-vue.html",
 		"oF": 0,
 		"oS": 0
 		},

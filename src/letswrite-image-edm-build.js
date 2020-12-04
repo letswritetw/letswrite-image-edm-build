@@ -10,6 +10,10 @@ const Lego = new Vue({
     url: '', // EDM的網址
     templateSum: 1, // 區塊有幾個
 
+    footer_bg: '#eeeeee', // footer 的背景色
+    footer_link: '#555555', // footer 的連結色
+    footer_color: '#555555', // footer 的文字色
+
     // 各區塊的資訊
     template: [
       {
@@ -131,7 +135,19 @@ const Lego = new Vue({
       const dataMaxWidth = document.querySelectorAll('[data-maxwidth]');
       Array.prototype.forEach.call(dataMaxWidth, data => {
         data.style.maxWidth = this.maxWidth + 'px';
-      })
+      });
+
+      // 替換 Footer 顏色
+      const footerBg = document.getElementById('footerBg');
+      footerBg.setAttribute('style', 'background-color: ' + this.footer_bg);
+
+      const footerLink = document.querySelectorAll('.footerLink');
+      Array.prototype.forEach.call(footerLink, footer => {
+        footer.setAttribute('style', 'line-height: 24px; text-decoration: none; color: ' + this.footer_link)
+      });
+
+      const footerColor = document.getElementById('footerColor');
+      footerColor.setAttribute('style', 'font-family: Microsoft JhengHei, MingLiU, sans-serif; margin-top: 0; margin-bottom: 0; line-height: 24px; font-size: 12px; color: ' + this.footer_color)
 
       // 加上圖片內容
       const imgContent = document.getElementById('js-content');
@@ -171,7 +187,7 @@ const Lego = new Vue({
           // 左
           if(t.result[0].url !== '') {
             itemLeft = `
-              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+              <td valign='middle' align='center' width="${tdWidth}">
                 <a href="${t.result[0].url}" target="_blank" style="display: block;">
                   <img style="display: block; max-width: 100%;" src="${t.result[0].name}" alt="${t.result[0].alt}">
                 </a>
@@ -179,7 +195,7 @@ const Lego = new Vue({
             `;
           } else {
             itemLeft = `
-              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+              <td valign='middle' align='center' width="${tdWidth}">
                 <img style="display: block; max-width: 100%;" src="${t.result[0].name}" alt="${t.result[0].alt}">
               </td>
             `;
@@ -188,7 +204,7 @@ const Lego = new Vue({
           // 右
           if(t.result[1].url !== '') {
             itemRight = `
-              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+              <td valign='middle' align='center' width="${tdWidth}">
                 <a href="${t.result[1].url}" target="_blank" style="display: block;">
                   <img style="display: block; max-width: 100%;" src="${t.result[1].name}" alt="${t.result[1].alt}">
                 </a>
@@ -196,7 +212,7 @@ const Lego = new Vue({
             `;
           } else {
             itemRight = `
-              <td class="m-100" valign='middle' align='center' width="${tdWidth}">
+              <td valign='middle' align='center' width="${tdWidth}">
                 <img style="display: block; max-width: 100%;" src="${t.result[1].name}" alt="${t.result[1].alt}">
               </td>
             `;
